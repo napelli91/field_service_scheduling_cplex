@@ -1,11 +1,12 @@
-from collections import defaultdict
 import cplex
 import datetime
-import pandas as pd
+import os
 import srsly
 import sys
 
+from collections import defaultdict
 from pathlib import Path
+
 from utils.field_service_class import FieldServiceManagementInstance
 
 
@@ -13,9 +14,13 @@ TOLERANCE = 10e-6
 
 
 def get_instance_data():
+
     file_location = Path(sys.argv[1].strip())
 
-    instance = FieldServiceManagementInstance(file=file_location)
+    data_path = Path(os.path.dirname(__file__))
+
+    instance = FieldServiceManagementInstance(file=file_location,
+                                              data_path=data_path)
 
     if instance.is_random:
         instance.save_to_json(name=f'loaded_{sys.argv[1].strip()}')
@@ -551,7 +556,8 @@ def populate_by_row(my_problem, data) -> dict:
 
     # Exportamos el LP cargado en myprob con formato .lp.
     # Util para debug.
-    my_problem.write(f'output_data/fsm_problem_{datetime.datetime.now().strftime("%m%d%Y_%H%M")}.lp')
+    my_problem.write(
+        f'output_data/fsm_problem_{datetime.datetime.now().strftime("%m%d%Y_%H%M")}.lp')
 
     return vars
 
@@ -605,7 +611,6 @@ def solve_lp(my_problem, data, var_indices):
     parse_results(var_indices, my_problem, data)
 
 
-
 def parse_results(var_indices, my_problem, data):
 
     data_path = Path(f'results/{sys.argv[1].strip().split(".")[0]}')
@@ -651,12 +656,12 @@ def parse_results(var_indices, my_problem, data):
                             'day': j+1,
                             'shift': k+1,
                             'workers_involved':
-                                { f'worker_{n}':
+                                {f'worker_{n}':
                                  bool(my_problem.solution.get_values(
-                                     list(worker_vars[n, i, j, k])[0]
-                                 ))
-                                 for n in range(data.number_of_workers)
-                                }
+                                      list(worker_vars[n, i, j, k])[0]
+                                      ))
+                                    for n in range(data.number_of_workers)
+                                 }
 
                         }
                     )
@@ -669,22 +674,24 @@ def parse_results(var_indices, my_problem, data):
 
 def main():
 
-    # Obtenemos los datos de la instancia.
+    # Creating new instance data
     data = get_instance_data()
+
+    # Printing some insigths from the new data
     data.print_description()
 
-    # Definimos el problema de cplex.
+    # Instanciating Cplex Problem class
     problem = cplex.Cplex()
     problem.set_problem_name(
         "field_service_management_problem")
 
-    # Armamos el modelo.
+    # Loading Model
     var_indices = populate_by_row(problem, data)
 
     print(
         f'Number of variables loaded: {problem.variables.get_num()}')
 
-    # Resolvemos el modelo.
+    # Solving the model
     solve_lp(problem, data, var_indices)
 
 

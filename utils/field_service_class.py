@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 class FieldServiceManagementInstance():
-    def __init__(self, file: str = None, seed=42) -> None:
+    def __init__(self, file: str = None, data_path: Path = None, seed: int = 42) -> None:
         # instance configuration
         self.orders = []
         self.price_per_order = []
@@ -18,10 +18,13 @@ class FieldServiceManagementInstance():
         self.number_of_shifts = 5
         self.is_random = False
 
-        # File instance
-        self.data_path = Path(os.path.dirname(__file__))/'input_data'
-        self.read_problem_from_file(file)
         random.seed(seed)
+        
+        # File instance
+        self.data_path = data_path if data_path else Path(
+            os.path.dirname(__file__))
+        if file:
+            self.read_problem_from_file(file)
 
     def read_problem_from_file(self, file_name: str) -> None:
         data = srsly.read_json(self.data_path/file_name)
