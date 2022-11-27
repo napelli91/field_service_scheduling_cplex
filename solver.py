@@ -660,13 +660,14 @@ def parse_results(var_indices, my_problem, data):
                         {
                             'day': j+1,
                             'shift': k+1,
+                            'workers_needed': int(data.orders_data.workers_needed.iloc[i]),
                             'workers_involved':
-                                {f'worker_{n}':
-                                 bool(my_problem.solution.get_values(
+                                [f'worker_{n}'
+                                    for n in range(data.number_of_workers)
+                                    if bool(my_problem.solution.get_values(
                                       list(worker_vars[n, i, j, k])[0]
                                       ))
-                                    for n in range(data.number_of_workers)
-                                 }
+                                ]
 
                         }
                     )
