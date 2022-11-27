@@ -196,7 +196,7 @@ the given problem:
 
 1. An _lp_ file describing the problem in CPLEX MIP language. This file can be
 found in the folder `output_data/`.
-2. An _JSON_ file with the description of the problem (Only if the input file
+2. A _JSON_ file with the description of the problem (Only if the input file
 is a random generated problem).
 3. A folder under `results/$YOUR_FILE_NAME$/` that contains 3 JSON files:
     - `orders_schedule.json`, A human-readable file that contains the description

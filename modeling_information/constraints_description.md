@@ -71,9 +71,9 @@ Since the worker can be assigned to many orders in a day, the payment structure 
 divided in 4 pieces:
 
 - If the worker has been assigned to less than 5 orders: the payment will be $1000 per order
-- If the worker has been assigned to less than 10 orders: 
+- If the worker has been assigned between 6 and 10 orders: 
 the payment will be $1200 per order in this piece
-- If the worker has been assigned to less than 15 orders: 
+- If the worker has been assigned between 11 and 15 orders: 
 the payment will be $1400 per order in this piece
 - If the worker has been assigned to more than 15 orders: 
 the payment will be $1500 per order in this piece.
