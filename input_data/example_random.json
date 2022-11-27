@@ -1,0 +1,11 @@
+{
+    "is_random": true,
+    "number_of_orders": 2,
+    "number_of_workers": 2,
+    "max_worker_per_order": 1,
+    "max_payment_per_order": 500,
+    "max_sequential_order": 0,
+    "max_non_seq_order": 0,
+    "max_repetitive_orders": 0,
+    "probability_of_conflict": 0.2
+}

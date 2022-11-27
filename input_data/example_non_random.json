@@ -1,0 +1,101 @@
+{
+    "is_random": false,
+    "number_of_orders": 10,
+    "number_of_workers": 10,
+    "payments": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+    ],
+    "workers_per_order": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+    ],
+    "sequential_orders": {
+        "count": 1,
+        "pairs": [
+            [
+                0,
+                1
+            ]
+        ]
+    },
+    "non_seq_orders": {
+        "count": 3,
+        "pairs": [
+            [
+                1,
+                3
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                3,
+                6
+            ]
+        ]
+    },
+    "repetitive_orders": {
+        "count": 4,
+        "pairs": [
+            [
+                1,
+                5
+            ],
+            [
+                2,
+                6
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                8
+            ]
+        ]
+    },
+    "conflictive_workers": {
+        "count": 5,
+        "pairs": [
+            [
+                0,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                4,
+                5
+            ]
+        ]
+    }
+}
