@@ -27,7 +27,7 @@ To run this solver the usage is quite simple, to run it you have to call the
 
 The config files can be described in two ways:
 
-- ***Random generated problems:*** If by any means, there is no a clear way how to 
+- [***Random generated problems***](./input_data/example_random.json): If by any means, there is no a clear way how to 
 define the conditions for the problem to solve. The script supports a type
 of input file that will generate _random_ instances to test the code.
 The only restriction in these cases is to create a JSON file with the 
@@ -53,7 +53,7 @@ following schema:
     the specific JSON file in order to be able to re-run the problem if
     needed.
 
-- ***Specific Problem generation:*** On the other hand, if there is an specific
+- [***Specific Problem generation***](./input_data/example_non_random.json): On the other hand, if there is an specific
 configuration that you may want to try. The JSON schema is quite different, it
 should have the following schema:
 
