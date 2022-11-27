@@ -15,7 +15,9 @@ TOLERANCE = 10e-6
 
 def get_instance_data():
 
-    file_location = Path(sys.argv[1].strip())
+    file_path = sys.argv[1].strip()
+    file_name = file_path.split('/')[-1]
+    file_location = Path(file_path)
 
     data_path = Path(os.path.dirname(__file__))
 
@@ -23,7 +25,7 @@ def get_instance_data():
                                               data_path=data_path)
 
     if instance.is_random:
-        instance.save_to_json(name=f'loaded_{sys.argv[1].strip()}')
+        instance.save_to_json(name=f'loaded_{file_name}')
     return instance
 
 
@@ -602,7 +604,8 @@ def solve_lp(my_problem, data, var_indices):
         for k, v in zip(my_problem.variables.get_names(), var_results)
     }
 
-    output_path = Path(f'results/{sys.argv[1].strip().split(".")[0]}')
+    file_name = sys.argv[1].strip().split("/")[-1].split(".")[0]
+    output_path = Path(f'results/{file_name}')
     output_path.mkdir(parents=True, exist_ok=True)
 
     srsly.write_json(
@@ -613,7 +616,9 @@ def solve_lp(my_problem, data, var_indices):
 
 def parse_results(var_indices, my_problem, data):
 
-    data_path = Path(f'results/{sys.argv[1].strip().split(".")[0]}')
+
+    file_name = sys.argv[1].strip().split("/")[-1].split(".")[0]
+    data_path = Path(f'results/{file_name}')
     data_path.mkdir(parents=True, exist_ok=True)
 
     orders_vars = var_indices['orders']
