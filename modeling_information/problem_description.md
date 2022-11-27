@@ -66,3 +66,7 @@ performed the $x^{n}_{m}$ orders for that piece of the piecewise payment schema.
 - $t_{i}$ represents the number of workers that needs to be assigned to the order $i$
 - $p_{i}$ is the profit obtained for performing the order $i$
 
+## Constraints modelling
+
+To understand more clearly the constraints modelled in this problem we have a detailed section
+with the description of every constraint in our solution [here](./problem_description.md)
