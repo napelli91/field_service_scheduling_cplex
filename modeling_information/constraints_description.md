@@ -8,6 +8,7 @@ problem.
 
 - Not all orders has to be done in the given week. (Since we are defining the variables
 as _binary_ is self contemplated in the definition)
+
 $$
     O_{ijk} \geq 0\;\;\forall\; i,j,k
 $$
