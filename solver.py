@@ -475,31 +475,41 @@ def load_constraints(my_problem, data, variables) -> None:
     # to fulfill the given orders.
     # In this case, the condition to met will be:
     #
-    # 1/t[i1] \sum_{n} worker_vars[n][i1][j][k] == 1/t[i1] \sum_{n} worker_vars[n][i1][j][k+1]
+    # 1/t[i1] \sum_{n} worker_vars[n][i1][j][k] == 1/t[i2] \sum_{n} worker_vars[n][i2][j][k+1]
     #   \forall j,k, (i1,i2) in correlative orders
 
     seq_pairs = data.sequential_orders_data.values.astype(int)
 
     for j in range(data.number_of_days):
-        for k in range(data.number_of_shifts-1):
+        for k in range(data.number_of_shifts):
             for pair in seq_pairs:
                 workers_order_a = [
                     list(worker_vars[n, pair[0], j, k])[0]
                     for n in range(data.number_of_workers)
                 ]
-                workers_order_b = [
-                    list(worker_vars[n, pair[1], j, k+1])[0]
-                    for n in range(data.number_of_workers)
-                ]
-                ind = workers_order_a + workers_order_b
-                val = [1.0/workers_per_order[pair[0]]] * \
-                    len(workers_order_a) + \
-                    [-1.0/workers_per_order[pair[1]]] * len(workers_order_b)
-                my_problem.linear_constraints.add(
-                    lin_expr=[cplex.SparsePair(ind=ind, val=val)],
-                    senses=["E"],
-                    rhs=[0.0]
-                )
+                if k < data.number_of_shifts-1:
+                    workers_order_b = [
+                        list(worker_vars[n, pair[1], j, k+1])[0]
+                        for n in range(data.number_of_workers)
+                    ]
+                    ind = workers_order_a + workers_order_b
+                    val = [1.0/workers_per_order[pair[0]]] * \
+                        len(workers_order_a) + \
+                        [-1.0/workers_per_order[pair[1]]] * len(workers_order_b)
+                    my_problem.linear_constraints.add(
+                        lin_expr=[cplex.SparsePair(ind=ind, val=val)],
+                        senses=["E"],
+                        rhs=[0.0]
+                    )
+                else:
+                    ind = workers_order_a
+                    val = [1.0/workers_per_order[pair[0]]] * \
+                        len(workers_order_a)
+                    my_problem.linear_constraints.add(
+                        lin_expr=[cplex.SparsePair(ind=ind, val=val)],
+                        senses=["E"],
+                        rhs=[0.0]
+                    )
 
     # constraint: conflictive workers should not be assigned in the same order
     #
@@ -536,7 +546,7 @@ def load_constraints(my_problem, data, variables) -> None:
                 for pair in ro_pairs:
                     ind = [
                         list(worker_vars[n, pair[0], j, k])[0],
-                        list(worker_vars[n, pair[1], j, k])[0]
+                        list(worker_vars[n, pair[1], j, k+1])[0]
                     ]
                     val = [1.0, 1.0]
                     my_problem.linear_constraints.add(
@@ -656,7 +666,7 @@ def parse_results(var_indices, my_problem, data):
                 result = my_problem.solution.get_values(
                     list(orders_vars[i, j, k]))
                 if result[0] not in off_values:
-                    orders_schedule[f'order_{i+1}'].update(
+                    orders_schedule[f'order_{i}'].update(
                         {
                             'day': j+1,
                             'shift': k+1,
