@@ -16,7 +16,7 @@ $$
 - All orders has to be performed in a given shift.
 
  $$
-    \sum_{k\,j} O_{ijk} \leq 1 \;\forall i
+    \sum_{kj} O_{ijk} \leq 1 \;\forall i
  $$
 
 - For a given order $i$ the number of workers assigned has to be the required
@@ -41,9 +41,9 @@ $$
         \begin{array}{rcll}
             \sum_{j} \alpha^{n}_{j} & \leq & 5 & \forall n\\
             &&&&\\
-            \sum_{i,k} T^{n}_{ijk} & \leq & M \cdot\alpha^n_j  & \forall n,j\; M = \text{ cte.}\\
+            \sum_{ik} T^{n}_{ijk} & \leq & M \cdot\alpha^n_j  & \forall n,j\; M = \text{ cte.}\\
             &&&&\\
-            \sum_{i,k} T^{n}_{ijk} & \geq & \alpha^{n}_{j} & \forall n,j
+            \sum_{ik} T^{n}_{ijk} & \geq & \alpha^{n}_{j} & \forall n,j
         \end{array}
     \right.
  $$
