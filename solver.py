@@ -131,8 +131,9 @@ def load_constraints(my_problem, data, variables) -> None:
     ## Beginning Constraints definiton ##
     # Constraint: each order i has to be done in only one shift in the week
     # sum(k in shifts, j in days) orders[i][j][k] == 1
-
+    c_iter = 0
     for i in range(len(data.orders_data)):
+        c_iter += 1
         ind = [list(orders_vars[i, j, k])[0]
                for j in range(data.number_of_days)
                for k in range(data.number_of_shifts)]
@@ -140,7 +141,8 @@ def load_constraints(my_problem, data, variables) -> None:
         my_problem.linear_constraints.add(
             lin_expr=[cplex.SparsePair(ind=ind, val=val)],
             senses=["L"],
-            rhs=[1.0])
+            rhs=[1.0],
+            names=[f'c_order#{c_iter}'])
 
     # constraint: for a given order in a given day and shift. If the order is
     # setted up to be done,
@@ -148,9 +150,11 @@ def load_constraints(my_problem, data, variables) -> None:
     # \sum_{n} worker_vars[n][i][j][k] == t[i] \cdot orders[i][j][k] \; \forall i,j,k
 
     workers_per_order = data.orders_data.workers_needed.values.astype(int)
+    c_iter = 0
     for i in range(len(data.orders_data)):
         for j in range(data.number_of_days):
             for k in range(data.number_of_shifts):
+                c_iter += 1
                 workers_involved = [list(worker_vars[n, i, j, k])[0]
                                     for n in range(data.number_of_workers)]
                 ind = workers_involved + list(orders_vars[i, j, k])
@@ -159,26 +163,31 @@ def load_constraints(my_problem, data, variables) -> None:
                 my_problem.linear_constraints.add(
                     lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                     senses=["E"],
-                    rhs=[0.0])
+                    rhs=[0.0],
+                    names=[f'c_workers_needed#{c_iter}'])
 
     # constraint: any given worker cannot work more than one order at any time
     # \sum_i workers[n][i][j][k] \leq 1 \;\forall n,j,k
-
+    c_iter = 0
     for n in range(data.number_of_workers):
         for j in range(data.number_of_days):
             for k in range(data.number_of_shifts):
+                c_iter += 1
                 ind = [list(worker_vars[n, i, j, k])[0]
                        for i in range(data.number_of_orders)]
                 val = [1.0] * len(ind)
                 my_problem.linear_constraints.add(
                     lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                     senses=["L"],
-                    rhs=[1.0])
+                    rhs=[1.0],
+                    names=[f'c_worker_load#{c_iter}'])
 
     # constraint: at any given day no worker can work more than 5 shifts
     # \sum_i \sum_k workers[n][i][j][k] \leq 4 \forall n,j
+    c_iter = 0
     for n in range(data.number_of_workers):
         for j in range(data.number_of_days):
+            c_iter += 1
             ind = [
                 list(worker_vars[n, i, j, k])[0]
                 for i in range(data.number_of_orders)
@@ -188,15 +197,18 @@ def load_constraints(my_problem, data, variables) -> None:
             my_problem.linear_constraints.add(
                 lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                 senses=["L"],
-                rhs=[4.0]
+                rhs=[4.0],
+                names=[f'c_worker_shift#{c_iter}']
             )
 
     # constraint: for any given pair of workers the difference of assigned
     # tasks has to be lower than 10 at any given moment
     # \sum_{ijk} workers[n][i][j][k] - workers[m][i][j][k] \leq 10 \; \forall n,m
 
+    c_iter = 0
     for n in range(data.number_of_workers):
         for m in range(data.number_of_workers):
+            c_iter += 1
             if n != m:
                 n_workers = [
                     list(worker_vars[n, i, j, k])[0]
@@ -215,14 +227,16 @@ def load_constraints(my_problem, data, variables) -> None:
                 my_problem.linear_constraints.add(
                     lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                     senses=["L"],
-                    rhs=[10.0]
+                    rhs=[10.0],
+                    names=[f'c_workers_difference#{c_iter}']
                 )
 
     # constaraint: No worker can work all the days of the planification
     # c1
     # \sum_j alphas[n][j] \leq 5 \forall n
-
+    c_iter = 0
     for n in range(data.number_of_workers):
+        c_iter += 1
         ind = [
             list(alphas_var[n, j])[0]
             for j in range(data.number_of_days)
@@ -231,15 +245,18 @@ def load_constraints(my_problem, data, variables) -> None:
         my_problem.linear_constraints.add(
             lin_expr=[cplex.SparsePair(ind=ind, val=val)],
             senses=["L"],
-            rhs=[5.0]
+            rhs=[5.0],
+            names=[f'c_alphas#{c_iter}']
         )
 
     # c2
     # \sum_{i,k} workers[n][i][j][k] \leq M \cdot alphas[n][j] \forall n,j\; with M a big enough constant value
 
     M_cte_value = max(data.number_of_orders, data.number_of_shifts)*2
+    c_iter = 0
     for n in range(data.number_of_workers):
         for j in range(data.number_of_days):
+            c_iter += 1
             workers_involved = [
                 list(worker_vars[n, i, j, k])[0]
                 for i in range(data.number_of_orders)
@@ -250,14 +267,16 @@ def load_constraints(my_problem, data, variables) -> None:
             my_problem.linear_constraints.add(
                 lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                 senses=["L"],
-                rhs=[0.0]
+                rhs=[0.0],
+                names=[f'c_alpha_worker#{c_iter}']
             )
 
     # c3
     # \sum_i \sum_k workers[n][i][j][k] \geq alphas[n][j] \forall n,j
-
+    c_iter = 0
     for n in range(data.number_of_workers):
         for j in range(data.number_of_days):
+            c_iter += 1
             workers_involved = [
                 list(worker_vars[n, i, j, k])[0]
                 for i in range(data.number_of_orders)
@@ -268,14 +287,17 @@ def load_constraints(my_problem, data, variables) -> None:
             my_problem.linear_constraints.add(
                 lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                 senses=["G"],
-                rhs=[0.0]
+                rhs=[0.0],
+                names=[f'c_alpha_consistency#{c_iter}']
             )
 
     # constraint: payment conditions
     # \sum_m unit_payment[m] \cdot \payments_x_vars[n][m] = P[n] \; \forall n
     number_of_payments_pieces = 4
     payments_partitions = [1000, 1200, 1400, 1500]
+    c_iter = 0
     for n in range(data.number_of_workers):
+        c_iter += 1
         orders_by_worker = [
             list(payments_x_vars[n, m])[0]
             for m in range(number_of_payments_pieces)
@@ -289,14 +311,16 @@ def load_constraints(my_problem, data, variables) -> None:
                 val=val)
             ],
             senses=["E"],
-            rhs=[0.0]
+            rhs=[0.0],
+            names=[f'c_payment_summ#{c_iter}']
         )
 
     # constraint: payment conditions. There is a piecewise payment schema associated to the number of
     # tasks achieved for any given worker
     # \sum_m payments_x_vars[n][m] = \sum_i\sum_j\sum_k worker[n][i][j][k] \; \forall n
-
+    c_iter = 0
     for n in range(data.number_of_workers):
+        c_iter += 1
         workers_involved = [
             list(worker_vars[n, i, j, k])[0]
             for i in range(data.number_of_orders)
@@ -312,14 +336,17 @@ def load_constraints(my_problem, data, variables) -> None:
         my_problem.linear_constraints.add(
             lin_expr=[cplex.SparsePair(ind=ind, val=val)],
             senses=["E"],
-            rhs=[0.0]
+            rhs=[0.0],
+            names=[f'c_payment_consistency#{c_iter}']
         )
 
     # constraint: forcing w auxiliary values to "turn on" when the
     # conditions are met
     # payments_w_vars[n,3] <= payments_w_vars[n,2]
     # payments_w_vars[n,2] <= payments_w_vars[n,1]
+    c_iter = 0
     for n in range(data.number_of_workers):
+        c_iter += 1
         my_problem.linear_constraints.add(
             lin_expr=[cplex.SparsePair(
                 ind=[list(payments_w_vars[n, 2])[0],
@@ -328,7 +355,8 @@ def load_constraints(my_problem, data, variables) -> None:
             )
             ],
             senses=["L"],
-            rhs=[0.0]
+            rhs=[0.0],
+            names=[f'c_w1_activation#{c_iter}']
         )
         my_problem.linear_constraints.add(
             lin_expr=[cplex.SparsePair(
@@ -338,7 +366,8 @@ def load_constraints(my_problem, data, variables) -> None:
             )
             ],
             senses=["L"],
-            rhs=[0.0]
+            rhs=[0.0],
+            names=[f'c_w2_activation#{c_iter}']
         )
 
     # constraint: forcing x auxiliary variables to count up to a certain ceil value
@@ -352,10 +381,11 @@ def load_constraints(my_problem, data, variables) -> None:
         [4.0, 4.0],
         [0, 15.0]
     ]
-
+    c_iter = 0
     for n in range(data.number_of_workers):
         # first condition 5 * payments_w_vars[n,0] <= payments_x_vars[n,0] <= 5
         # 5 * payments_w_vars[n,0] <= payments_x_vars[n,0]
+        c_iter += 1
         my_problem.linear_constraints.add(
             lin_expr=[cplex.SparsePair(
                 ind=[list(payments_w_vars[n, 0])[0],
@@ -364,7 +394,8 @@ def load_constraints(my_problem, data, variables) -> None:
             )
             ],
             senses=["L"],
-            rhs=[0.0]
+            rhs=[0.0],
+            names=[f'c_w1x1_1_activation#{c_iter}']
         )
         # payments_x_vars[n,0] <= 5
         my_problem.linear_constraints.add(
@@ -374,7 +405,8 @@ def load_constraints(my_problem, data, variables) -> None:
             )
             ],
             senses=["L"],
-            rhs=[pieces[0][1]]
+            rhs=[pieces[0][1]],
+            names=[f'c_w1x1_2_activation#{c_iter}']
         )
 
         # second condition (10-6) * payments_w_vars[n,1] <= payments_x_vars[n,1] <= (10-6) * payments_w_vars[n,0]
@@ -387,7 +419,8 @@ def load_constraints(my_problem, data, variables) -> None:
             )
             ],
             senses=["L"],
-            rhs=[0.0]
+            rhs=[0.0],
+            names=[f'c_w2x2_1_activation#{c_iter}']
         )
         # payments_x_vars[n,1] <= (10-6) * payments_w_vars[n,0]
         my_problem.linear_constraints.add(
@@ -398,7 +431,8 @@ def load_constraints(my_problem, data, variables) -> None:
             )
             ],
             senses=["L"],
-            rhs=[0.0]
+            rhs=[0.0],
+            names=[f'c_w2x2_2_activation#{c_iter}']
         )
         # third condition (15-11) * payments_w_vars[n,2] <= payments_x_vars[n,1] <= (15-11) * payments_w_vars[n,1]
         # (15-11) * payments_w_vars[n,2] <= payments_x_vars[n,2]
@@ -410,7 +444,8 @@ def load_constraints(my_problem, data, variables) -> None:
             )
             ],
             senses=["L"],
-            rhs=[0.0]
+            rhs=[0.0],
+            names=[f'c_w3x3_1_activation#{c_iter}']
         )
         # payments_x_vars[n,2] <= (15-11) * payments_w_vars[n,1]
         my_problem.linear_constraints.add(
@@ -421,7 +456,8 @@ def load_constraints(my_problem, data, variables) -> None:
             )
             ],
             senses=["L"],
-            rhs=[0.0]
+            rhs=[0.0],
+            names=[f'c_w3x3_2_activation#{c_iter}']
         )
         # last condition 0 <= payments_x_vars[n,3] <= 15 * payments_w_vars[n,2]
         # 0 <= payments_x_vars[n,3]
@@ -432,7 +468,8 @@ def load_constraints(my_problem, data, variables) -> None:
             )
             ],
             senses=["G"],
-            rhs=[pieces[3][0]]
+            rhs=[pieces[3][0]],
+            names=[f'c_w3x3_1_activation#{c_iter}']
         )
         # payments_x_vars[n,3] <= (15) * payments_w_vars[n,2]
         my_problem.linear_constraints.add(
@@ -443,7 +480,8 @@ def load_constraints(my_problem, data, variables) -> None:
             )
             ],
             senses=["L"],
-            rhs=[0.0]
+            rhs=[0.0],
+            names=[f'c_w3x3_2_activation#{c_iter}']
         )
 
     # constraint: for a given pair (i1,i2) of orders it has to be that if i1 is done for a given combination j,k
@@ -454,11 +492,12 @@ def load_constraints(my_problem, data, variables) -> None:
     # where i1,i2 are in a list of non consecutive orders
 
     nonseq_pairs = data.non_consecutive_orders.values.astype(int)
-
+    c_iter = 0
     for n in range(data.number_of_workers):
         for j in range(data.number_of_days):
             for k in range(data.number_of_shifts-1):
                 for pair in nonseq_pairs:
+                    c_iter += 1
                     ind = [
                         list(worker_vars[n, pair[0], j, k])[0],
                         list(worker_vars[n, pair[1], j, k+1])[0]
@@ -467,7 +506,8 @@ def load_constraints(my_problem, data, variables) -> None:
                     my_problem.linear_constraints.add(
                         lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                         senses=["L"],
-                        rhs=[1.0]
+                        rhs=[1.0],
+                        names=[f'c_nonseq_pairs#{c_iter}']
                     )
 
     # constraint: for a given pair (i1,i2) of orders if i1 is done in the day j shift k, the order
@@ -479,14 +519,16 @@ def load_constraints(my_problem, data, variables) -> None:
     #   \forall j,k, (i1,i2) in correlative orders
 
     seq_pairs = data.sequential_orders_data.values.astype(int)
-
+    c_iter = 0
     for j in range(data.number_of_days):
         for k in range(data.number_of_shifts):
             for pair in seq_pairs:
+                c_iter += 1
                 workers_order_a = [
                     list(worker_vars[n, pair[0], j, k])[0]
                     for n in range(data.number_of_workers)
                 ]
+                c_iter += 1
                 if k < data.number_of_shifts-1:
                     workers_order_b = [
                         list(worker_vars[n, pair[1], j, k+1])[0]
@@ -495,11 +537,13 @@ def load_constraints(my_problem, data, variables) -> None:
                     ind = workers_order_a + workers_order_b
                     val = [1.0/workers_per_order[pair[0]]] * \
                         len(workers_order_a) + \
-                        [-1.0/workers_per_order[pair[1]]] * len(workers_order_b)
+                        [-1.0/workers_per_order[pair[1]]] * \
+                        len(workers_order_b)
                     my_problem.linear_constraints.add(
                         lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                         senses=["E"],
-                        rhs=[0.0]
+                        rhs=[0.0],
+                        names=[f'c_seq_pairs#{c_iter}']
                     )
                 else:
                     ind = workers_order_a
@@ -508,7 +552,8 @@ def load_constraints(my_problem, data, variables) -> None:
                     my_problem.linear_constraints.add(
                         lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                         senses=["E"],
-                        rhs=[0.0]
+                        rhs=[0.0],
+                        names=[f'c_seq_pairs#{c_iter}']
                     )
 
     # constraint: conflictive workers should not be assigned in the same order
@@ -517,11 +562,12 @@ def load_constraints(my_problem, data, variables) -> None:
     # where n1,n2 are in a list of conflictive workers
 
     cw_pairs = data.conflicting_workers.values.astype(int)
-
+    c_iter = 0
     for i in range(data.number_of_orders):
         for j in range(data.number_of_days):
             for k in range(data.number_of_shifts):
                 for pair in cw_pairs:
+                    c_iter += 1
                     ind = [
                         list(worker_vars[pair[0], i, j, k])[0],
                         list(worker_vars[pair[1], i, j, k])[0]
@@ -530,7 +576,8 @@ def load_constraints(my_problem, data, variables) -> None:
                     my_problem.linear_constraints.add(
                         lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                         senses=["L"],
-                        rhs=[1.0]
+                        rhs=[1.0],
+                        names=[f'c_cw_pairs#{c_iter}']
                     )
 
     # constraint: repetitive orders should be avoided on the next turn for a given worker
@@ -539,11 +586,12 @@ def load_constraints(my_problem, data, variables) -> None:
     # where n1,n2 are in a list of conflictive workers
 
     ro_pairs = data.repetitive_orders.values.astype(int)
-
-    for i in range(data.number_of_orders):
+    c_iter = 0
+    for n in range(data.number_of_workers):
         for j in range(data.number_of_days):
             for k in range(data.number_of_shifts-1):
                 for pair in ro_pairs:
+                    c_iter += 1
                     ind = [
                         list(worker_vars[n, pair[0], j, k])[0],
                         list(worker_vars[n, pair[1], j, k+1])[0]
@@ -552,7 +600,8 @@ def load_constraints(my_problem, data, variables) -> None:
                     my_problem.linear_constraints.add(
                         lin_expr=[cplex.SparsePair(ind=ind, val=val)],
                         senses=["L"],
-                        rhs=[1.0]
+                        rhs=[1.0],
+                        names=[f'c_ro_pairs#{c_iter}']
                     )
 
 
@@ -626,7 +675,6 @@ def solve_lp(my_problem, data, var_indices):
 
 def parse_results(var_indices, my_problem, data):
 
-
     file_name = sys.argv[1].strip().split("/")[-1].split(".")[0]
     data_path = Path(f'results/{file_name}')
     data_path.mkdir(parents=True, exist_ok=True)
@@ -675,9 +723,9 @@ def parse_results(var_indices, my_problem, data):
                                 [f'worker_{n}'
                                     for n in range(data.number_of_workers)
                                     if bool(my_problem.solution.get_values(
-                                      list(worker_vars[n, i, j, k])[0]
-                                      ))
-                                ]
+                                        list(worker_vars[n, i, j, k])[0]
+                                    ))
+                                 ]
 
                         }
                     )
@@ -713,3 +761,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+    sys.stdout.write('Script finished!\n')
+    sys.stdout.flush()
+    sys.exit(0)
