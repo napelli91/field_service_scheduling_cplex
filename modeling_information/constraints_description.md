@@ -37,7 +37,7 @@ $$
 
 
  $$
-    \left\{
+    \left\\{
         \begin{array}{rcll}
             \sum_{j} \alpha_{j}^{n} & \leq & 5 & \forall n\\
             &&&&\\
@@ -96,7 +96,7 @@ introduce the auxilary variables $x^{n}_{0}$ and $w^{n}_{0}$, with these two var
 create following constraints:
 
 $$
-    \left\{
+    \left\\{
        \begin{array}{ccccc}
             5 w_{0}^{n} & \leq & x_{0}^{n} & \leq &  5 \\
             (10-6) w_{1}^{n} & \leq & x_{1}^{n} & \leq &  (10-6) w_{0}^{n} \\
@@ -110,7 +110,7 @@ $$
 Additionally since we need to control the $w^{n}_{0}$:
 
 $$
-    \left\{
+    \left\\{
         \begin{array}{rcl}
             w^n_2 & \leq & w^n_1 \\
             w^n_1 & \leq & w^n_0 \\
